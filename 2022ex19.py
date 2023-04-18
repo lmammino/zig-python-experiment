@@ -192,16 +192,18 @@ def parallel_function_pure(i_blueprint):
     return (i + 1) * n
 
 
-from cffi import FFI
+# from cffi import FFI
 
-cffi = FFI()
-cffi.cdef(
-    """
-      unsigned long zig_run(unsigned long bp_ore_ore, unsigned long bp_clay_ore, unsigned long bp_obs_ore, unsigned long bp_obs_clay, unsigned long bp_geo_ore, unsigned long bp_geo_obs, unsigned long time_limit);
-    """
-)
+# cffi = FFI()
+# cffi.cdef(
+#     """
+#       unsigned long zig_run(unsigned long bp_ore_ore, unsigned long bp_clay_ore, unsigned long bp_obs_ore, unsigned long bp_obs_clay, unsigned long bp_geo_ore, unsigned long bp_geo_obs, unsigned long time_limit);
+#     """
+# )
 
-ex19 = cffi.dlopen(os.path.abspath("zig-out/lib/libex19.so"))
+# ex19 = cffi.dlopen(os.path.abspath("zig-out/lib/libex19.so"))
+
+import ex19
 
 def parallel_function_zig(i_blueprint):
     i, blueprint = i_blueprint

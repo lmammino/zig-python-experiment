@@ -1,2 +1,9 @@
 zig-out/
 zig-cache/
+.env
+.eggs/
+__pycache__
+build/
+dist/
+ex19.egg-info/
+build.zig
