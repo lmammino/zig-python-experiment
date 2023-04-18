@@ -1,6 +1,27 @@
 from multiprocessing import Pool
 import time
 import os
+import platform
+from cffi import FFI
+
+
+cffi = FFI()
+cffi.cdef(
+    """
+      unsigned long zig_run(unsigned long bp_ore_ore, unsigned long bp_clay_ore, unsigned long bp_obs_ore, unsigned long bp_obs_clay, unsigned long bp_geo_ore, unsigned long bp_geo_obs, unsigned long time_limit);
+    """
+)
+
+
+if platform.uname()[0] == "Windows":
+    lib_path = "zig-out/lib/libex19.dll"
+elif platform.uname()[0] == "Linux":
+    lib_path = "zig-out/lib/libex19.so"
+else:
+    lib_path = "zig-out/lib/libex19.dylib"
+
+
+ex19 = cffi.dlopen(os.path.abspath(lib_path))
 
 
 _input = """Blueprint 1: Each ore robot costs 3 ore. Each clay robot costs 3 ore. Each obsidian robot costs 2 ore and 15 clay. Each geode robot costs 3 ore and 9 obsidian.
@@ -191,17 +212,6 @@ def parallel_function_pure(i_blueprint):
     print(i, n)
     return (i + 1) * n
 
-
-from cffi import FFI
-
-cffi = FFI()
-cffi.cdef(
-    """
-      unsigned long zig_run(unsigned long bp_ore_ore, unsigned long bp_clay_ore, unsigned long bp_obs_ore, unsigned long bp_obs_clay, unsigned long bp_geo_ore, unsigned long bp_geo_obs, unsigned long time_limit);
-    """
-)
-
-ex19 = cffi.dlopen(os.path.abspath("zig-out/lib/libex19.so"))
 
 def parallel_function_zig(i_blueprint):
     i, blueprint = i_blueprint
