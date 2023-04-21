@@ -6,4 +6,3 @@ __pycache__
 build/
 dist/
 ex19.egg-info/
-build.zig

@@ -9,41 +9,6 @@ import shutil
 
 from setuptools.command.build_ext import build_ext as SetupToolsBuildExt
 
-zig_build_file_osx = """
-const std = @import("std");
-
-pub fn build(b: *std.build.Builder) void {{
-    // Standard release options allow the person running `zig build` to select
-    // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
-    const mode = std.builtin.Mode.ReleaseFast; // b.standardReleaseOptions();
-
-    const lib = b.addObject("ex19", "src/ex19.zig");
-    lib.addPackagePath("zig-deque", "lib/zig-deque/src/deque.zig");
-    lib.setBuildMode(mode);
-    lib.setOutputDir("zig-out/");
-    lib.disable_stack_probing = true;
-    {}
-    b.default_step.dependOn(&lib.step);
-}}
-"""
-
-zig_build_file_linux = """
-const std = @import("std");
-
-pub fn build(b: *std.build.Builder) void {{
-    // Standard release options allow the person running `zig build` to select
-    // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
-    const mode = std.builtin.Mode.ReleaseFast;
-
-    const lib = b.addSharedLibrary("ex19", "src/ex19.zig", b.version(0, 0, 1));
-    lib.addPackagePath("zig-deque", "lib/zig-deque/src/deque.zig");
-    lib.setBuildMode(mode);
-    lib.setOutputDir("zig-out/");
-    lib.linkLibC();
-    {}
-    b.default_step.dependOn(&lib.step);
-}}
-"""
 
 class ZigCompilerError(Exception):
     """Some compile/link operation failed."""
@@ -54,6 +19,9 @@ class BuildExt(SetupToolsBuildExt):
         super().__init__(dist)
 
     def build_extension(self, ext):
+        build_env = os.environ.copy()
+        build_env["ADDINCLUDEPATH"] = " ".join(self.compiler.include_dirs)
+
         if '-v' in sys.argv:
             verbose = 1
         elif '-vv' in sys.argv:
@@ -71,8 +39,8 @@ class BuildExt(SetupToolsBuildExt):
         zig = os.environ.get('PY_ZIG', 'zig')  # override zig in path with specific version
         if sys.platform == 'darwin':
             libdirs = self.compiler.library_dirs
-            # if not libdirs:
-            #     raise ZigCompilerError('Cannot find library directory. Did you compile (or run pyenv install) with: env PYTHON_CONFIGURE_OPTS="--enable-shared" ?')
+            if not libdirs:
+                raise ZigCompilerError('Cannot find library directory. Did you compile (or run pyenv install) with: env PYTHON_CONFIGURE_OPTS="--enable-shared" ?')
             if verbose > 1:
                 print('output', output, target)
                 for k, v in self.compiler.__dict__.items():
@@ -80,10 +48,6 @@ class BuildExt(SetupToolsBuildExt):
             bld_cmd = [zig, 'build']
             if verbose > 0:
                 bld_cmd.append('-freference-trace')
-
-            includes = '\n    '.join([f'lib.addIncludePath("{inc_dir}");' for inc_dir in self.compiler.include_dirs])            
-            with open("build.zig", "w") as f:
-                f.write(zig_build_file_osx.format(includes))
 
             proc = subprocess.run(bld_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8')
             if proc.returncode != 0:
@@ -121,10 +85,6 @@ class BuildExt(SetupToolsBuildExt):
             for fn in obj_files:
                 fn.unlink()
         else:
-            includes = '\n    '.join([f'lib.addIncludePath("{inc_dir}");' for inc_dir in self.compiler.include_dirs])
-            with open("build.zig", "w") as f:
-                f.write(zig_build_file_linux.format(includes))
-
             bld_cmd = [zig, 'build']
             # for inc_dir in self.compiler.include_dirs:
             #     bld_cmd.extend(('-I', inc_dir))
@@ -139,7 +99,7 @@ class BuildExt(SetupToolsBuildExt):
             if verbose > 0:
                 print('\ncmd', ' '.join([x if ' ' not in x else '"' + x + '"' for x in bld_cmd]))
                 sys.stdout.flush()
-            subprocess.run(bld_cmd, encoding='utf-8')
+            subprocess.run(bld_cmd, encoding='utf-8', env=build_env)
         if verbose > 0:
             print([str(target)])
             print([str(x) for x in target.parent.glob('*')])
