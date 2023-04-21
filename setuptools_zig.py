@@ -73,7 +73,7 @@ class BuildExt(SetupToolsBuildExt):
             bld_cmd.extend(['-o', str(target)])
             print(' '.join([x if ' ' not in x else '"' + x + '"' for x in bld_cmd]))
             target.parent.mkdir(parents=True, exist_ok=True)
-            proc = subprocess.run(bld_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8')
+            proc = subprocess.run(bld_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', env=build_env)
             if proc.returncode != 0:
                 print(proc.stdout)
                 if verbose > 1:
