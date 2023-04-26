@@ -1,7 +1,10 @@
-from multiprocessing import Pool
+import re
 import time
-import os
 
+from collections import deque
+from multiprocessing import Pool
+
+import ex19
 
 _input = """Blueprint 1: Each ore robot costs 3 ore. Each clay robot costs 3 ore. Each obsidian robot costs 2 ore and 15 clay. Each geode robot costs 3 ore and 9 obsidian.
 Blueprint 2: Each ore robot costs 4 ore. Each clay robot costs 4 ore. Each obsidian robot costs 4 ore and 12 clay. Each geode robot costs 4 ore and 19 obsidian.
@@ -33,9 +36,6 @@ Blueprint 27: Each ore robot costs 4 ore. Each clay robot costs 3 ore. Each obsi
 Blueprint 28: Each ore robot costs 4 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 20 clay. Each geode robot costs 2 ore and 19 obsidian.
 Blueprint 29: Each ore robot costs 4 ore. Each clay robot costs 4 ore. Each obsidian robot costs 4 ore and 16 clay. Each geode robot costs 2 ore and 15 obsidian.
 Blueprint 30: Each ore robot costs 2 ore. Each clay robot costs 4 ore. Each obsidian robot costs 4 ore and 19 clay. Each geode robot costs 2 ore and 18 obsidian."""
-
-from collections import deque
-import re
 
 
 def parser(s):
@@ -191,17 +191,6 @@ def parallel_function_pure(i_blueprint):
     print(i, n)
     return (i + 1) * n
 
-
-from cffi import FFI
-
-cffi = FFI()
-cffi.cdef(
-    """
-      unsigned long zig_run(unsigned long bp_ore_ore, unsigned long bp_clay_ore, unsigned long bp_obs_ore, unsigned long bp_obs_clay, unsigned long bp_geo_ore, unsigned long bp_geo_obs, unsigned long time_limit);
-    """
-)
-
-ex19 = cffi.dlopen(os.path.abspath("zig-out/lib/libex19.so"))
 
 def parallel_function_zig(i_blueprint):
     i, blueprint = i_blueprint

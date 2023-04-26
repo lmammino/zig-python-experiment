@@ -6,20 +6,20 @@ This repository contains the solution for Advent of Code 2022 Day 19 in Zig and 
 
 ### Requirements
 
-* Zig
-* cffi
+* Zig (0.10)
+* ~~cffi~~
 * Python 3
 
 ## init
 
 ```
-pip install cffi
+pip install -r requirements.txt
 ```
 
 ## build the zig library
 
 ```
-zig build
+python setup.py install
 ```
 
 ## run the python code
