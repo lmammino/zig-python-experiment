@@ -49,7 +49,7 @@ class BuildExt(SetupToolsBuildExt):
             if verbose > 0:
                 bld_cmd.append('-freference-trace')
 
-            proc = subprocess.run(bld_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8')
+            proc = subprocess.run(bld_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', env=build_env)
             if proc.returncode != 0:
                 print(proc.stdout)
                 if verbose > 1:
@@ -105,7 +105,10 @@ class BuildExt(SetupToolsBuildExt):
             print([str(x) for x in target.parent.glob('*')])
         if not output.exists():
             output = output.parent / ('lib' + output.name)
-            shutil.copy(Path('zig-out/libex19.so'), output)
+            try:
+                shutil.copy(Path('zig-out/libex19.so'), output)
+            except:
+                shutil.copy(target, output)   
         if output.exists():
             if target.exists():
                 target.unlink()
